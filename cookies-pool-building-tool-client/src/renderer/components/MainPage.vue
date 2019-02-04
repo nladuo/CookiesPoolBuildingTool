@@ -45,6 +45,7 @@
       <br><br>
       <h2>已有cookie：</h2>
       <Table border :columns="columns" :data="cookies"></Table>
+      <h3>当前cookie总数：{{ cookieCount }}</h3>
 
     </div>
 
@@ -110,6 +111,7 @@
                               duration: 3
                           });
                           this.server_valid = true;
+                          this.getCookiesHttp();
                       } else {
                           this.$Notice.error({
                               title: '失败',
@@ -152,6 +154,9 @@
                           this.driver.quit();
                           this.open_disabled = false;
                           this.cookie_disabled = true;
+                          this.getCookiesHttp();
+                      }, ()=> {
+                          this.$Spin.hide();
                       })
                   });
           },
@@ -212,8 +217,9 @@
            * 添加cookie的Http请求
            * @param cookies_str
            * @param success_callback
+           * @param err_callback
            */
-          addCookieHttp(cookies_str, success_callback) {
+          addCookieHttp(cookies_str, success_callback, err_callback) {
 
               this.$http.get(this.server_url + "/add_cookie",
                   {
@@ -223,19 +229,22 @@
                       }
                   }).then((response) => {
                   if (response.data.code === 200) {
+                      success_callback();
                       this.$Notice.success({
                           title: '成功',
                           desc: '添加cookie成功',
                           duration: 3
                       });
-                      success_callback()
                   } else if (response.data.code === 502) {
+                      err_callback();
                       this.$Notice.error({
                           title: '失败',
                           desc: '此cookie未能通过服务器校验',
                           duration: 0
                       });
+
                   } else if (response.data.code === 503) {
+                      err_callback();
                       this.$Notice.error({
                           title: '失败',
                           desc: '请勿添加重复的cookie',
@@ -244,6 +253,7 @@
                   }
                   console.log(response.data);
               }).catch((error) => {
+                  err_callback();
 
                   console.log(error);
                   this.$Notice.error({
@@ -254,29 +264,27 @@
               });
           },
           getCookiesHttp() {
-              this.$http.get(this.server_url + "/add_cookie",
+              this.$Spin.show();
+              this.$http.get(this.server_url + "/get_cookies",
                   {
                       params:{
                           passwd: this.server_passwd,
-                          cookies: cookies_str
                       }
                   }).then((response) => {
+                  this.$Spin.hide();
                   if (response.data.code === 200) {
-                      this.$Notice.success({
-                          title: '成功',
-                          desc: '添加cookie成功',
-                          duration: 3
-                      });
-                  } else if (response.data.code === 502) {
+                      this.cookies = response.data.data.cookies;
+                      this.cookieCount = response.data.data.count;
+                  } else if (response.data.code === 501) {
                       this.$Notice.error({
                           title: '失败',
-                          desc: '此cookie未能通过服务器校验',
+                          desc: '密码错误',
                           duration: 0
                       });
                   }
                   console.log(response.data);
               }).catch((error) => {
-
+                  this.$Spin.hide();
                   console.log(error);
                   this.$Notice.error({
                       title: '失败',

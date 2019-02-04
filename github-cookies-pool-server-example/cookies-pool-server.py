@@ -107,9 +107,17 @@ def get_cookies():
             "msg": "password error"
         })
 
+    if len(All_Cookies) <= 5:
+        resp_cookies = All_Cookies
+    else:
+        resp_cookies = All_Cookies[:5]
+
     return json.dumps({
         "code": 200,
-        "data": All_Cookies
+        "data": {
+            "cookies": resp_cookies,
+            "count": len(All_Cookies)
+        }
     })
 
 
