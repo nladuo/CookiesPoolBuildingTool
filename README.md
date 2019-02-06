@@ -8,9 +8,8 @@
 
 **本工具旨在方便人工提取cookie，cookie池服务器的代码需要自己定义。**
 
-## Status
-Building....
-
+## 效果
+![](screenshot.png)
 
 
 ## LICENSE
